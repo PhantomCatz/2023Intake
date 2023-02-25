@@ -199,8 +199,7 @@ public class CatzIntake {
                         pivotTimer.reset();
                         firstTimeThrough = false;
                         }
-                      
-                        
+                         
                         currentAngle = getIntakeDeployPositionDegrees();
                         time = pivotTimer.get();
 
@@ -213,11 +212,10 @@ public class CatzIntake {
                         angleOld = getIntakeDeployPositionDegrees();
                         timeOld = time;
                         angleDot = deltaAngle/deltaTime;
+                        powerForMotor = ALPHA3_DEPLOY * Math.pow(time , 3) - ALPHA4_DEPLOY *Math.pow(time , 4) + ALPHA5_DEPLOY *Math.pow(time , 5);
                        
-                        powerForMotor = ALPHA3_DEPLOY * (time *time *time) - ALPHA4_DEPLOY *(time *time *time*time) + ALPHA5_DEPLOY *(time *time *time *time *time);
-                        
-                        targetAngle = (A3_DEPLOY*time*time*time) + (A4_DEPLOY*time*time*time*time) + (A5_DEPLOY*time*time*time*time*time);
-                        targetAngularRate = (3 * A3_DEPLOY * time * time) + (4 * A4_DEPLOY * time *time * time) + (5 * A5_DEPLOY * time * time * time * time);
+                        targetAngle = (A3_DEPLOY*Math.pow(time , 3)) + (A4_DEPLOY*Math.pow(time , 4)) + (A5_DEPLOY*Math.pow(time , 5));
+                        targetAngularRate = (3 * A3_DEPLOY * Math.pow(time , 2)) + (4 * A4_DEPLOY * Math.pow(time , 3)) + (5 * A5_DEPLOY * Math.pow(time , 4));
                         finalMotorPower = powerForMotor + Kp*(targetAngle - getIntakeDeployPositionDegrees()) + Kd*(targetAngularRate - deltaAngle/deltaTime); 
                         intakePivotMotor.set(finalMotorPower);
                          
@@ -254,9 +252,9 @@ public class CatzIntake {
                         angleOld = getIntakeDeployPositionDegrees();
                         timeOld = time;//Math.pow(4,2)
                         angleDot = deltaAngle/deltaTime;
-                        powerForMotor = ALPHA3_STOW * (time *time *time) - ALPHA4_STOW *(time *time *time*time) + ALPHA5_STOW *(time *time *time *time *time); 
-                        targetAngle = (A3_STOW*time*time*time) + (A4_STOW*time*time*time*time) + (A5_STOW*time*time*time*time*time);
-                        targetAngularRate = (3 * A3_STOW * time * time) + (4 * A4_STOW * time *time * time) + (5 * A5_STOW * time * time * time * time);
+                        powerForMotor = ALPHA3_STOW * (Math.pow(time , 3)) - ALPHA4_STOW *(Math.pow(time , 4)) + ALPHA5_STOW *(Math.pow(time , 5)); 
+                        targetAngle = (A3_STOW*Math.pow(time , 3)) + (A4_STOW*Math.pow(time , 4)) + (A5_STOW*Math.pow(time , 5));
+                        targetAngularRate = (3 * A3_STOW * Math.pow(time , 2)) + (4 * A4_STOW * Math.pow(time , 3)) + (5 * A5_STOW * Math.pow(time , 4));
                         finalMotorPower = powerForMotor + Kp*(targetAngle - getIntakeDeployPositionDegrees()) + Kd*(targetAngularRate - deltaAngle/deltaTime); 
                         intakePivotMotor.set(finalMotorPower);
                         currentAngle = getIntakeDeployPositionDegrees();
