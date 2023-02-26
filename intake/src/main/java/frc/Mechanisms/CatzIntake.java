@@ -1,10 +1,12 @@
 package frc.Mechanisms;
 
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
  
 public class CatzIntake {
@@ -14,25 +16,24 @@ public class CatzIntake {
 //-----------------------------------------------------------------------------------------------------------
 //Roller
 //-----------------------------------------------------------------------------------------------------------
-  //private  VictorSPX intakeRoller;
   private WPI_TalonFX intakeRollerMotor;
-  //correction needed
   private final int INTAKE_ROLLER_MC_ID        = 11; 
 
   private final double INTAKE_ROLLER_MOTOR_POWER       = 0.5;
   private final double OUTTAKE_ROLLER_MOTOR_POWER      = 0.5;
   private final double INTAKE_MOTOR_POWER_OFF          = 0.0;
 
-  public final int INTAKE_ROLLER_OFF = 0;
-  public final int INTAKE_ROLLER_IN  = 1;
-  public final int INTAKE_ROLLER_OUT = 2;
-  public final int INTAKE_ROLLER_UNINITIALIZED = -999;
-  public int   intakeRollerState = INTAKE_ROLLER_OFF;
+  private final int INTAKE_ROLLER_OFF = 0;
+  private final int INTAKE_ROLLER_IN  = 1;
+  private final int INTAKE_ROLLER_OUT = 2;
+  private final int INTAKE_ROLLER_UNINITIALIZED = -999;
+  private int   intakeRollerState = INTAKE_ROLLER_OFF;
 
 //-----------------------------------------------------------------------------------------------------------
 //Pivot
 //-----------------------------------------------------------------------------------------------------------
   private WPI_TalonFX intakePivotMotor;
+ // private WPI_TalonFX 
   private final int INTAKE_PIVOT_MC_ID        = 10; 
 
   private final int INTAKE_PIVOT_FULLY_DEPLOYED_ANGLE = 90;
@@ -48,87 +49,99 @@ public class CatzIntake {
   private final double INTAKE_PIVOT_FINAL_RATIO = INTAKE_PIVOT_GEAR_RATIO*INTAKE_PIVOT_SPROCKET_RATIO;
 
 
-
+  private double deploymentMotorRawPosition;
 
   //Pivot status
-  public  final int INTAKE_PIVOT_MODE_NULL                = 0;
-  public  final int INTAKE_PIVOT_MODE_DEPLOY              = 1;
-  public  final int INTAKE_PIVOT_MODE_FULLY_DEPLOYED      = 2;
-  public  final int INTAKE_PIVOT_MODE_INITIALIZATION      = 3;
-  public  final int INTAKE_PIVOT_MODE_STOW                = 4;
-  public  final int INTAKE_MODE_STOW_HOLD           = 5;
+  private  final int INTAKE_PIVOT_MODE_NULL                = 0;
+  private  final int INTAKE_PIVOT_MODE_DEPLOY              = 1;
+  private  final int INTAKE_PIVOT_MODE_DEPLOY_CALC         = 10;
+  private  final int INTAKE_PIVOT_MODE_FULLY_DEPLOYED      = 2;
+  private  final int INTAKE_PIVOT_MODE_INITIALIZATION      = 3;
+  private  final int INTAKE_PIVOT_MODE_STOW                = 4;
+  private  final int INTAKE_PIVOT_MODE_STOW_CALC           = 14;
+  private  final int INTAKE_MODE_STOW_HOLD                 = 5;
 
 //Pivot IntakeMode initialization
-  public int intakePivotMode = INTAKE_PIVOT_MODE_NULL;
+  private int intakePivotMode = INTAKE_PIVOT_MODE_NULL;
 
   public boolean intakeStowed = true;
   public boolean intakeDeployed = false;
 
   public int counter=0;
 
-  public final int INTAKE_PIVOT_STOWED = 0;
-  public final int INTAKE_PIVOT_DEPLOYED = 1;
-  public final int INTAKE_PIVOT_IN_TRANSIT = 2;
-  public final int INTAKE_PIVOT_UNINITIALIZED = -999;
-  public int intakePivotState = INTAKE_PIVOT_STOWED;
+  private final double INTAKE_PIVOT_DEPLOY_POWER = 0.2;
+  private final double INTAKE_PIVOT_STOW_POWER   = 0.4;
+  private final double INTAKE_PIVOT_DEPLOY_POWER_OFF_ANGLE = 25.0;
 
-  public Timer pivotTimer;
+  private final double INTAKE_THREAD_PERIOD      =0.02;
 
-  public static double time=Timer.getFPGATimestamp();
+  private final int INTAKE_PIVOT_STOWED = 0;
+  private final int INTAKE_PIVOT_DEPLOYED = 1;
+  private final int INTAKE_PIVOT_IN_TRANSIT = 2;
+  private final int INTAKE_PIVOT_UNINITIALIZED = -999;
+  private int intakePivotState = INTAKE_PIVOT_STOWED;
 
-  public static double finalMotorPower = 0;
-  public static double Kp = 0.01;
-  public static double Kd = 0.001;
-  public final static int INTAKE_DEPLOY_FINAL_ANGLE = 90;
-  public final static int INTAKE_DEPLOY_INITIAL_ANGLE = 0;
-  public final int INTAKE_STOW_FINAL_ANGLE = 0;
-  public final int INTAKE_STOW_INITIAL_ANGLE = 90;
-  public final double INTAKE_DEPLOYMENT_TIME = 0.26;
-  public static double targetAngle=0;
-  public static double targetAngularRate = 0;
-  public static double deltaAngle = 0;
+  private Timer pivotTimer;
 
-  public final static double INTAKE_FULLY_DEPLOYED_ANGLE = 89.0;
-  public final static double INTAKE_FULLY_STOWED_ANGELE  = 1.0;
+  private final double INTAKE_PIVOT_REL_ENCODER_CPR = 2048.0;
+
+  private static double time=Timer.getFPGATimestamp();
+
+  private static double finalMotorPower = 0;
+  private static double Kp = 0.01;
+  private static double Kd = 0.001;
+  private final static int INTAKE_DEPLOY_FINAL_ANGLE = 90;
+  private final static int INTAKE_DEPLOY_INITIAL_ANGLE = 0;
+  private final int INTAKE_STOW_FINAL_ANGLE = 0;
+  private final int INTAKE_STOW_INITIAL_ANGLE = 90;
+  private final double INTAKE_DEPLOYMENT_TIME = 0.26;
+  private static double targetAngle=0;
+  private static double targetAngularRate = 0;
+  private static double deltaAngle = 0;
+
+  private final static double INTAKE_FULLY_DEPLOYED_ANGLE = 89.0;
+  private final static double INTAKE_FULLY_STOWED_ANGELE  = 1.0;
 
 
   // a are the coeffient for the fifth order polynomial profile
-  public static double a3;
-  public static double a4;
-  public static double a5;
+  private static double a3;
+  private static double a4;
+  private static double a5;
   //coeffients
 
-  public final double COEFF1 = 10;
-  public final double COEFF2 = -15;
-  public final double COEFF3 = 6;
-  public final double INTAKE_MAX_TORCUE = 5.84;
-  public static double angleDot = 0;
-  public static double angleOld = 0;
-  public static double currentAngle = 0;
-  public static double timeOld = 0;
-  public static double deltaTime = 0;
-  public final  double B_DEPLOY = (INTAKE_DEPLOY_FINAL_ANGLE-INTAKE_DEPLOY_INITIAL_ANGLE)/INTAKE_DEPLOYMENT_TIME;;
-  public final double A3_DEPLOY = COEFF1*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
-  public final double A4_DEPLOY = COEFF2*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
-  public final double A5_DEPLOY = COEFF3*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
+  private final double COEFF1 = 10;
+  private final double COEFF2 = -15;
+  private final double COEFF3 = 6;
+  private final double INTAKE_MAX_TORCUE = 5.84;
+  private static double angleDot = 0;
+  private static double angleOld = 0;
+  private static double currentAngle = 0;
+  private static double timeOld = 0;
+  private static double deltaTime = 0;
+  private final  double B_DEPLOY = (INTAKE_DEPLOY_FINAL_ANGLE-INTAKE_DEPLOY_INITIAL_ANGLE)/INTAKE_DEPLOYMENT_TIME;;
+  private final double A3_DEPLOY = COEFF1*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
+  private final double A4_DEPLOY = COEFF2*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
+  private final double A5_DEPLOY = COEFF3*B_DEPLOY/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
 
-  public final double B_STOW = (INTAKE_STOW_FINAL_ANGLE-INTAKE_STOW_INITIAL_ANGLE)/INTAKE_DEPLOYMENT_TIME;
-  public final double A3_STOW = COEFF1*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
-  public final double A4_STOW = COEFF2*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;  
-  public final double A5_STOW = COEFF3*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
-  public static double powerForMotor;
+  private final double B_STOW = (INTAKE_STOW_FINAL_ANGLE-INTAKE_STOW_INITIAL_ANGLE)/INTAKE_DEPLOYMENT_TIME;
+  private final double A3_STOW = COEFF1*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
+  private final double A4_STOW = COEFF2*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;  
+  private final double A5_STOW = COEFF3*B_STOW/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME/INTAKE_DEPLOYMENT_TIME;
+  private static double powerForMotor;
 
-  public final double DEG2RAD = Math.PI/180.0;
-  public final double INTAKE_INERTIA = 0.61;//kg * m^2 
-  public final double ALPHA3_DEPLOY = (A3_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
-  public final double ALPHA4_DEPLOY = (A4_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
-  public final double ALPHA5_DEPLOY = (A5_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double DEG2RAD = Math.PI/180.0;
+  private final double INTAKE_INERTIA = 0.61;//kg * m^2 
+  private final double ALPHA3_DEPLOY = (A3_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double ALPHA4_DEPLOY = (A4_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double ALPHA5_DEPLOY = (A5_DEPLOY*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
 
-  public final double ALPHA3_STOW = (A3_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
-  public final double ALPHA4_STOW = (A4_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
-  public final double ALPHA5_STOW = (A5_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double ALPHA3_STOW = (A3_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double ALPHA4_STOW = (A4_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
+  private final double ALPHA5_STOW = (A5_STOW*DEG2RAD*INTAKE_INERTIA)/INTAKE_PIVOT_FINAL_RATIO/INTAKE_MAX_TORCUE;
 
-  public static boolean firstTimeThrough = true;
+  private static boolean firstTimeThrough = true;
+
+ 
 
 
 
@@ -151,9 +164,10 @@ public class CatzIntake {
   
    //initialize for pivot motor
    //sensor-->0;
+
     intakePivotMotor.setNeutralMode(NeutralMode.Brake);
 
-  
+    intakeControl();
 
   }
 
@@ -183,6 +197,9 @@ public class CatzIntake {
     
 
 
+
+
+
 //------------------------------------------------Pivot--------------------------------------------------------------
     
     public void intakeControl(){
@@ -194,7 +211,39 @@ public class CatzIntake {
                 //int currentAngle = (int)getIntakeDeployPositionDegrees();
                 switch(intakePivotMode)
                 {
+                    case INTAKE_PIVOT_MODE_NULL:
+                      
+                      break;
+
                     case INTAKE_PIVOT_MODE_DEPLOY:
+
+                      currentAngle = getIntakeDeployPositionDegrees();
+                      if(currentAngle > INTAKE_PIVOT_DEPLOY_POWER_OFF_ANGLE )
+                      {
+                        intakePivotMotor.set(INTAKE_MOTOR_POWER_OFF);
+                        intakePivotMode = INTAKE_PIVOT_MODE_NULL;
+                      }
+                      else if(currentAngle<-5)
+                      {
+                        intakePivotMotor.set(INTAKE_MOTOR_POWER_OFF);
+                      }
+                      break;
+                      
+                    case INTAKE_PIVOT_MODE_STOW:
+                      currentAngle = getIntakeDeployPositionDegrees();
+                      if(currentAngle < 25.0)
+                      {
+                        intakePivotMotor.set(0.1);
+                      }
+                      else if(currentAngle < 2.0)
+                      {
+                        intakePivotMotor.set(INTAKE_MOTOR_POWER_OFF);
+                      }
+
+                      break;
+
+                    case INTAKE_PIVOT_MODE_DEPLOY_CALC:
+                  
                         if(firstTimeThrough == true ){
                         pivotTimer.reset();
                         firstTimeThrough = false;
@@ -233,7 +282,8 @@ public class CatzIntake {
                         intakePivotMotor.set(0);
                         break;
 
-                    case INTAKE_PIVOT_MODE_STOW:
+                    
+                    case INTAKE_PIVOT_MODE_STOW_CALC:
                         
                       if(firstTimeThrough == true){
                         pivotTimer.reset();
@@ -273,26 +323,77 @@ public class CatzIntake {
                        
                     break;
 
+                    
                     default:
                         intakePivotMotor.set(INTAKE_MOTOR_POWER_OFF);
                         intakeRollerOff();
                     break;
-                }
+                }//eng of switch
+
+                Timer.delay(INTAKE_THREAD_PERIOD);
+
+            }//eng of while true
                 
-            }
-                //switch()
         });
         intakeThread.start();
     
-}
+    }//end of intakeControl();
+
+
+    /*-----------------------------------------------------------------------------------------
+    *  
+    * intakePivotDeploy()
+    *
+    *----------------------------------------------------------------------------------------*/
+    public void intakePivotDeploy(){
+      intakePivotMode = INTAKE_PIVOT_MODE_DEPLOY;
+
+      intakePivotMotor.set(-INTAKE_PIVOT_DEPLOY_POWER);
+      
+    }
+
+    public void intakePivotStow(){
+
+      intakePivotMode = INTAKE_PIVOT_MODE_STOW;
+
+      intakePivotMotor.set(INTAKE_PIVOT_STOW_POWER);
+
+    }
 
 
 
+
+    /*-----------------------------------------------------------------------------------------
+    * getIntakeDeployPositionDegrees
+    *----------------------------------------------------------------------------------------*/
     public double getIntakeDeployPositionDegrees(){
-        double deploymentMotorRawPosition = intakePivotMotor.getSelectedSensorPosition();
-        return ((deploymentMotorRawPosition / 2048) *360 * INTAKE_PIVOT_FINAL_RATIO ) % 360;//deploymentMotorRawPosition 0-4096 is 1 rotation
-        //% count will goes
-        //
+        deploymentMotorRawPosition = intakePivotMotor.getSelectedSensorPosition();
+
+        double motorShaftRevolution = deploymentMotorRawPosition / INTAKE_PIVOT_REL_ENCODER_CPR;
+        double pivotShaftRevolution = motorShaftRevolution / INTAKE_PIVOT_FINAL_RATIO;
+        double pivotAngle =pivotShaftRevolution * -360.0;//motor  spin forward is positive 
+        
+        return pivotAngle;
+       
+    }
+
+
+    /*-----------------------------------------------------------------------------------------
+    *  
+    * Smart Dashboard
+    *
+    *----------------------------------------------------------------------------------------*/
+    public void smartDashboardIntake()
+    {
+        SmartDashboard.putNumber("PivotAngle", getIntakeDeployPositionDegrees());
+        //SmartDashboard.putBooleanArray("yep",intakePivotMotor.)
+       
+    }
+
+    public void smartDashboardIntake_Debug()
+    {
+      SmartDashboard.putNumber("PivotCounts", deploymentMotorRawPosition);
+    
     }
 
   

@@ -20,13 +20,17 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     intake = new CatzIntake();
-   // intake.intakeControlForTest();
     xboxDrv = new XboxController(XBOX_PORT_ID);
   }
 
  
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    intake.smartDashboardIntake();
+
+    intake.smartDashboardIntake_Debug();
+
+  }
 
   
   @Override
@@ -78,20 +82,16 @@ public class Robot extends TimedRobot {
 
     
     //LeftStickButton--> control Deploy
-    /*if (xboxDrv.getLeftStickButton()){
-      if(elevatorPivoted == false){
-      intake.intakeMode = intake.INTAKE_MODE_DEPLOY_START;
+    if (xboxDrv.getLeftStickButtonPressed()){
+      
+        intake.intakePivotDeploy();
+      
       }
-      else{
-        System.out.println("elevator is pivoting");
+      else if(xboxDrv.getAButtonPressed()){
+        intake.intakePivotStow();
       }
-    }
-    //RightStickButton--> control Stow
-    else if (xboxDrv.getRightStickButton()){
-      intake.intakeMode = intake.INTAKE_MODE_STOW_START;
-    }*/
-
-        
+      
+    
     
     
 }
