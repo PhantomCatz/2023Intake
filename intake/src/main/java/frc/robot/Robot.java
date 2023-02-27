@@ -16,7 +16,7 @@ public class Robot extends TimedRobot {
   public static CatzIntake intake;
   private XboxController xboxDrv;
   public static boolean elevatorPivoted = false;
-
+double testKP = 0.0333333;
   @Override
   public void robotInit() {
     intake = new CatzIntake();
@@ -82,16 +82,33 @@ public class Robot extends TimedRobot {
 
     
     //LeftStickButton--> control Deploy
-    if (xboxDrv.getLeftStickButtonPressed()){
+    if (xboxDrv.getBButtonPressed())
+    {
       
         intake.intakePivotDeploy();
       
-      }
-      else if(xboxDrv.getAButtonPressed()){
+    }
+    else if(xboxDrv.getAButtonPressed())
+    {
         intake.intakePivotStow();
-      }
-      
-    
+    }
+    else if(xboxDrv.getStartButton()){
+        if(xboxDrv.getRightY() > 0.2 || xboxDrv.getRightY() < -0.2){
+          intake.intakePivotMotor.set(xboxDrv.getRightY() * 0.3);
+        }
+        else{
+          intake.intakePivotMotor.set(0.0);
+        }
+    }
+
+    if (xboxDrv.getBackButtonPressed())
+    {
+      System.out.println("KP IS NOW " + testKP);
+      intake.intakePivotMotor.config_kP(0, testKP );
+      intake.intakePivotMotor.config_kP(1,testKP );
+      testKP = testKP * 2;
+
+    }
     
     
 }
