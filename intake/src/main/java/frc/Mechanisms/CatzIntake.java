@@ -10,12 +10,15 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.DataLogger.CatzLog;
+import frc.DataLogger.DataCollection;
+import frc.robot.Robot;
 
  
 public class CatzIntake {
 
   private Thread intakeThread;
-  
+  public CatzLog data;
 //-----------------------------------------------------------------------------------------------------------
 //Roller
 //-----------------------------------------------------------------------------------------------------------
@@ -245,8 +248,8 @@ public class CatzIntake {
     
         intakeThread = new Thread(() ->
         { 
-            while(true)
-            {
+          while(true)
+          {
                 //int currentAngle = (int)getIntakeDeployPositionDegrees();
                 switch(intakePivotMode)
                 {
@@ -374,10 +377,18 @@ public class CatzIntake {
                         intakeRollerOff();
                     break;
                 }//eng of switch
-
+                if(DataCollection.chosenDataID.getSelected() == DataCollection.LOG_ID_INTAKE)
+                {
+                    data = new CatzLog(Robot.currentTime.get(),
+                    targetAngularRate, targetAngle, finalMotorPower, powerForMotor, currentAngle, deltaAngle, deltaTime,
+                     -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0,
+                    DataCollection.boolData);  
+                    Robot.dataCollection.logData.add(data);
+                }
                 Timer.delay(INTAKE_THREAD_PERIOD);
 
-            }//eng of while true
+              
+              }//eng of while true
                 
         });
         intakeThread.start();

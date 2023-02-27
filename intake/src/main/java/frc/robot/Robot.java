@@ -4,14 +4,22 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.DataLogger.CatzLog;
+import frc.DataLogger.DataCollection;
 import frc.Mechanisms.CatzIntake;
 
 
 public class Robot extends TimedRobot {
+  public ArrayList<CatzLog> dataArrayList;
+  public static DataCollection dataCollection;
+  public static Timer currentTime;
   final int XBOX_PORT_ID = 0;
   public static CatzIntake intake;
   private XboxController xboxDrv;
@@ -19,8 +27,13 @@ public class Robot extends TimedRobot {
 double testKP = 0.0333333;
   @Override
   public void robotInit() {
+    dataCollection = new DataCollection();
     intake = new CatzIntake();
     xboxDrv = new XboxController(XBOX_PORT_ID);
+    currentTime = new Timer();
+
+    dataArrayList = new ArrayList<CatzLog>();
+    dataCollection.dataCollectionInit(dataArrayList);
   }
 
  
@@ -117,7 +130,23 @@ double testKP = 0.0333333;
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    currentTime.stop();
+    
+    if(dataCollection.logDataValues == true)
+    {
+      dataCollection.stopDataCollection();
+
+      try 
+      {
+        dataCollection.exportData(dataArrayList);
+      } 
+      catch (Exception e) 
+      {
+        e.printStackTrace();
+      }
+    }
+  }
 
   /** This function is called periodically when disabled. */
   @Override
