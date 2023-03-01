@@ -298,7 +298,7 @@ public class DataCollection
         return logDataID;
     }
 
-    public static String setLogDataName()
+    public  String setLogDataName()
     {
         switch(getLogDataID())
         {

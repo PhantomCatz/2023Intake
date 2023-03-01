@@ -24,10 +24,15 @@ public class Robot extends TimedRobot {
   public static CatzIntake intake;
   private XboxController xboxDrv;
   public static boolean elevatorPivoted = false;
-double testKP = 0.0333333;
+//double testKP = 0.0333333;
+
+
+
   @Override
   public void robotInit() {
+
     dataCollection = new DataCollection();
+
     intake = new CatzIntake();
     xboxDrv = new XboxController(XBOX_PORT_ID);
     currentTime = new Timer();
@@ -60,12 +65,14 @@ double testKP = 0.0333333;
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-   
+   dataCollection.setLogDataID(dataCollection.LOG_ID_INTAKE);
+   dataCollection.startDataCollection();
   }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
+  public void teleopPeriodic() 
+  {
     
 
   //----------------------------------------------------------------------------------------------------------------------------------
@@ -98,14 +105,14 @@ double testKP = 0.0333333;
     if (xboxDrv.getBButtonPressed())
     {
       
-        intake.intakePivotDeploy();
+      intake.intakePivotDeploy();
       
     }
     else if(xboxDrv.getAButtonPressed())
     {
-        intake.intakePivotStow();
+      intake.intakePivotStow();
     }
-    else if(xboxDrv.getStartButton()){
+    /*else if(xboxDrv.getStartButton()){
         if(xboxDrv.getRightY() > 0.2 || xboxDrv.getRightY() < -0.2){
           intake.intakePivotMotor.set(xboxDrv.getRightY() * 0.3);
         }
@@ -121,7 +128,7 @@ double testKP = 0.0333333;
       intake.intakePivotMotor.config_kP(1,testKP );
       testKP = testKP * 2;
 
-    }
+    }*/
     
     
 }
